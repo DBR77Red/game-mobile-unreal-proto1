@@ -232,7 +232,7 @@ void AEnemy::AttackBoxOverlapBegin(UPrimitiveComponent* OverlappedComponent, AAc
 
 	if (Player)
 	{
-		//Player->TakeDamage
+		Player->TakeDamage(AttackDamage, AttackStunDuration);
 		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::White, TEXT("Player Take Damage"));
 
 	}

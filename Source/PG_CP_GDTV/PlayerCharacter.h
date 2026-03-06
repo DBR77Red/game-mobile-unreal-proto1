@@ -17,6 +17,9 @@
 #include "GameFramework/Controller.h"
 
 #include "PaperZDAnimInstance.h"
+//for finding the name of the StateMachine
+#include "PaperZDAnimBPGeneratedClass.h"
+#include "AnimNodes/PaperZDAnimNode_StateMachine.h"
 
 #include "PlayerCharacter.generated.h"
 
@@ -67,6 +70,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "State", meta = (ToolTip = "Whether the player is allowed to move"))
 	bool CanAttack = true;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	int HitPoints = 100;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int AttackDamage = 25;
 		
@@ -98,4 +104,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void EnableAttackCollisionBox(bool Enabled);
+
+	void TakeDamage(int DamageAmount, float StunDuration);
+	void UpdateHP(int NewHP);
 };

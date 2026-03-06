@@ -25,6 +25,16 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	UPaperZDAnimBPGeneratedClass* AnimClass = Cast<UPaperZDAnimBPGeneratedClass>(GetAnimInstance()->GetClass());
+	if (AnimClass)
+	{
+		FPaperZDAnimationBaseContext Ctx(GetAnimInstance());
+		for (FPaperZDAnimNode_StateMachine* SM : AnimClass->GetStateMachineNodes(GetAnimInstance()))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("StateMachine name: %s"), *SM->GetMachineName().ToString());
+		}
+	}
+
 	//Add Input Mapping Context
 	if(APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
@@ -173,4 +183,38 @@ void APlayerCharacter::EnableAttackCollisionBox(bool Enabled)
 	}
 
 
+}
+
+
+void APlayerCharacter::TakeDamage(int DamageAmount, float StunDuration)
+{
+	if (!IsAlive) return;
+
+	UpdateHP(HitPoints - DamageAmount);
+
+	if (HitPoints <= 0)
+	{
+		////plyer dead
+		UpdateHP(0);
+
+		IsAlive = false;
+		CanMove = false;
+		CanAttack = false;
+
+		GetAnimInstance()->JumpToNode(FName("JumpDie"));
+		EnableAttackCollisionBox(false);
+	}
+	else
+	{
+		//player lives
+		GetAnimInstance()->JumpToNode(FName("JumpTakeHit"));
+
+
+	}
+
+}
+
+void APlayerCharacter::UpdateHP(int NewHP)
+{
+	HitPoints = NewHP; 
 }
