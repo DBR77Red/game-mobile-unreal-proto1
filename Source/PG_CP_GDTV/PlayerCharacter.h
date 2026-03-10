@@ -11,6 +11,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "Components/InputComponent.h"
 #include "Components/BoxComponent.h"
+#include "Engine/TimerHandle.h"
 #include "InputActionValue.h"
 
 
@@ -20,6 +21,10 @@
 //for finding the name of the StateMachine
 #include "PaperZDAnimBPGeneratedClass.h"
 #include "AnimNodes/PaperZDAnimNode_StateMachine.h"
+//
+
+#include "PlayerHUD.h"
+
 
 #include "PlayerCharacter.generated.h"
 
@@ -59,10 +64,19 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UPaperZDAnimSequence* AttackAnimSequence;
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UPlayerHUD> PlayerHUDClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPlayerHUD* PlayerHUDWidget;
+
 
 	// === State ===
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "State", meta = (ToolTip = "Whether the player is alive or has been defeated"))
 	bool IsAlive = true; 
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "State", meta = (ToolTip = "Whether the player is alive or has been defeated"))
+	bool IsStunned = false;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "State", meta = (ToolTip = "Whether the player is allowed to move"))
 	bool CanMove = true;
@@ -81,6 +95,8 @@ public:
 
 
 	FZDOnAnimationOverrideEndSignature OnAttackOverrideEndDelegate; 
+
+	FTimerHandle StunTimer;
 
 	APlayerCharacter();
 
@@ -107,4 +123,7 @@ public:
 
 	void TakeDamage(int DamageAmount, float StunDuration);
 	void UpdateHP(int NewHP);
+
+	void Stun(float DurationInSeconds);
+	void OnStunTimerTimeout();
 };

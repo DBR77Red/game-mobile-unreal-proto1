@@ -6,6 +6,9 @@
 
 #include "Enemy.h"
 
+#include "Kismet/GameplayStatics.h" 
+
+
 APlayerCharacter::APlayerCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -50,6 +53,23 @@ void APlayerCharacter::BeginPlay()
 	AttackCollisionBox->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::AttackBoxOverlapBegin);
 	EnableAttackCollisionBox(false);
 
+	if (PlayerHUDClass)
+	{
+
+		PlayerHUDWidget = CreateWidget<UPlayerHUD>(UGameplayStatics::GetPlayerController(GetWorld(), 0), PlayerHUDClass);
+		if (PlayerHUDWidget)
+		{
+
+			PlayerHUDWidget->AddToPlayerScreen();
+			
+			PlayerHUDWidget->SetHP(HitPoints);
+			PlayerHUDWidget->SetDiamonds(50);
+			PlayerHUDWidget->SetLevel(1);
+		}
+
+	}
+
+
 }
 
 void APlayerCharacter::Tick(float DeltaTime) 
@@ -81,7 +101,7 @@ void APlayerCharacter::Move(const FInputActionValue& Value)
 {
 	float MoveActionValue = Value.Get<float>();
 	
-	if (IsAlive && CanMove)
+	if (IsAlive && CanMove && !IsStunned)
 	{
 		
 		FVector Direction = FVector(1.0f, 0.0f, 0.0f);
@@ -114,7 +134,7 @@ void APlayerCharacter::UpdateDirection(float MoveDirection)
 
 void APlayerCharacter::JumpStarted(const FInputActionValue& Value)
 {
-	if (IsAlive && CanMove)
+	if (IsAlive && CanMove && !IsStunned)
 	{
 		Jump();
 	}
@@ -128,7 +148,7 @@ void APlayerCharacter::JumpEnded(const FInputActionValue& Value)
 
 void APlayerCharacter::Attack(const FInputActionValue& Value)
 {
-	if (IsAlive && CanAttack)
+	if (IsAlive && CanAttack && !IsStunned)
 	{
 		CanAttack = false;
 		CanMove = false;
@@ -190,6 +210,8 @@ void APlayerCharacter::TakeDamage(int DamageAmount, float StunDuration)
 {
 	if (!IsAlive) return;
 
+	Stun(StunDuration);
+
 	UpdateHP(HitPoints - DamageAmount);
 
 	if (HitPoints <= 0)
@@ -217,4 +239,28 @@ void APlayerCharacter::TakeDamage(int DamageAmount, float StunDuration)
 void APlayerCharacter::UpdateHP(int NewHP)
 {
 	HitPoints = NewHP; 
+	PlayerHUDWidget->SetHP(HitPoints);
+
+
+}
+
+void APlayerCharacter::Stun(float DurationInSeconds)
+{
+	IsStunned = true;
+
+	bool IsTimerAlreadyActive = GetWorldTimerManager().IsTimerActive(StunTimer);
+	if (IsTimerAlreadyActive)
+	{
+		GetWorldTimerManager().ClearTimer(StunTimer);
+	}
+
+	GetWorldTimerManager().SetTimer(StunTimer, this, &APlayerCharacter::OnStunTimerTimeout, 1.0f, false, DurationInSeconds);
+	GetAnimInstance()->StopAllAnimationOverrides();
+	EnableAttackCollisionBox(false);
+}
+
+void APlayerCharacter::OnStunTimerTimeout()
+{
+	IsStunned = false;
+
 }
