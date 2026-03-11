@@ -53,6 +53,14 @@ void APlayerCharacter::BeginPlay()
 	AttackCollisionBox->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::AttackBoxOverlapBegin);
 	EnableAttackCollisionBox(false);
 
+	
+	MyGameInstance = Cast<UCrustyPirateGameInstance>(GetGameInstance());
+	if (MyGameInstance)
+	{
+		HitPoints = MyGameInstance->PlayerHP;
+	}
+
+	
 	if (PlayerHUDClass)
 	{
 
@@ -239,6 +247,7 @@ void APlayerCharacter::TakeDamage(int DamageAmount, float StunDuration)
 void APlayerCharacter::UpdateHP(int NewHP)
 {
 	HitPoints = NewHP; 
+	MyGameInstance->SetPlayerHP(HitPoints);
 	PlayerHUDWidget->SetHP(HitPoints);
 
 

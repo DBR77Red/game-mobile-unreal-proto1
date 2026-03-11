@@ -24,6 +24,7 @@
 //
 
 #include "PlayerHUD.h"
+#include "CrustyPirateGameInstance.h"
 
 
 #include "PlayerCharacter.generated.h"
@@ -69,6 +70,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UPlayerHUD* PlayerHUDWidget;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	UCrustyPirateGameInstance* MyGameInstance;
 
 
 	// === State ===
