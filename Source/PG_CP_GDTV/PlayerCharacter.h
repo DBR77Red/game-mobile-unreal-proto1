@@ -12,6 +12,9 @@
 #include "Components/InputComponent.h"
 #include "Components/BoxComponent.h"
 #include "Engine/TimerHandle.h"
+
+#include "Sound/SoundBase.h"
+
 #include "InputActionValue.h"
 
 
@@ -25,6 +28,8 @@
 
 #include "PlayerHUD.h"
 #include "CrustyPirateGameInstance.h"
+
+#include "CollectableItem.h"
 
 
 #include "PlayerCharacter.generated.h"
@@ -68,12 +73,16 @@ public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UPlayerHUD> PlayerHUDClass;
 
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UPlayerHUD* PlayerHUDWidget;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	UCrustyPirateGameInstance* MyGameInstance;
 
+	//Sound
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USoundBase* ItemPickupSound;
 
 	// === State ===
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "State", meta = (ToolTip = "Whether the player is alive or has been defeated"))
@@ -130,4 +139,6 @@ public:
 
 	void Stun(float DurationInSeconds);
 	void OnStunTimerTimeout();
+
+	void CollectItem(CollectableType ItemType);
 };
