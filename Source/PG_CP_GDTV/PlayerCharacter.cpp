@@ -58,6 +58,11 @@ void APlayerCharacter::BeginPlay()
 	if (MyGameInstance)
 	{
 		HitPoints = MyGameInstance->PlayerHP;
+
+		if (MyGameInstance->IsDoubleJumpUnloacked)
+		{
+			UnlockDoubleJump();
+		}
 	}
 
 	
@@ -71,7 +76,7 @@ void APlayerCharacter::BeginPlay()
 			PlayerHUDWidget->AddToPlayerScreen();
 			
 			PlayerHUDWidget->SetHP(HitPoints);
-			PlayerHUDWidget->SetDiamonds(50);
+			PlayerHUDWidget->SetDiamonds(MyGameInstance->CollectedDiamontCount);
 			PlayerHUDWidget->SetLevel(1);
 		}
 
@@ -282,19 +287,31 @@ void APlayerCharacter::CollectItem(CollectableType ItemType)
 	{
 		case CollectableType::HealthPotion:
 		{
+			int HealAmount = 25;
+			
+			// In case I want to limit the number of hit points to 100
+			UpdateHP(FMath::Min(HitPoints + HealAmount, 100));
 
+			// Mostrado no curso
+			//UpdateHP(HitPoints + HealAmount);
 
 		}break;
 
 		case CollectableType::Diamond:
 		{
-
+			MyGameInstance->AddDiamond(1);
+			PlayerHUDWidget->SetDiamonds(MyGameInstance->CollectedDiamontCount);
 
 		}break;
 
 
 		case CollectableType::DoubleJumpUpgrade:
 		{
+			if (!MyGameInstance->IsDoubleJumpUnloacked)
+			{
+				MyGameInstance->IsDoubleJumpUnloacked = true;
+				UnlockDoubleJump();
+			}
 
 
 		}break;
@@ -306,4 +323,9 @@ void APlayerCharacter::CollectItem(CollectableType ItemType)
 		}break;
 
 	}
+}
+
+void APlayerCharacter::UnlockDoubleJump()
+{
+	JumpMaxCount = 2;
 }

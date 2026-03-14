@@ -141,4 +141,7 @@ public:
 	void OnStunTimerTimeout();
 
 	void CollectItem(CollectableType ItemType);
+
+	void UnlockDoubleJump();
+	
 };

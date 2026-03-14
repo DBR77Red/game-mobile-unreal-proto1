@@ -16,9 +16,17 @@ class PG_CP_GDTV_API UCrustyPirateGameInstance : public UGameInstance
 
 public: 
 
-	UPROPERTY(VisibleAnywhere, BLueprintReadWrite)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	int PlayerHP = 100;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	int CollectedDiamontCount = 0;
+
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	bool IsDoubleJumpUnloacked = false;
+	
 	void SetPlayerHP(int NewHP);
+	void AddDiamond(int Amount);
 	
 };
