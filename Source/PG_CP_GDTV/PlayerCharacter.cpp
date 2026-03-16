@@ -59,7 +59,7 @@ void APlayerCharacter::BeginPlay()
 	{
 		HitPoints = MyGameInstance->PlayerHP;
 
-		if (MyGameInstance->IsDoubleJumpUnloacked)
+		if (MyGameInstance->IsDoubleJumpUnlocked)
 		{
 			UnlockDoubleJump();
 		}
@@ -77,7 +77,7 @@ void APlayerCharacter::BeginPlay()
 			
 			PlayerHUDWidget->SetHP(HitPoints);
 			PlayerHUDWidget->SetDiamonds(MyGameInstance->CollectedDiamontCount);
-			PlayerHUDWidget->SetLevel(1);
+			PlayerHUDWidget->SetLevel(MyGameInstance->CurrentLevelIndex);
 		}
 
 	}
@@ -229,7 +229,7 @@ void APlayerCharacter::TakeDamage(int DamageAmount, float StunDuration)
 
 	if (HitPoints <= 0)
 	{
-		////plyer dead
+		////player dead
 		UpdateHP(0);
 
 		IsAlive = false;
@@ -238,6 +238,9 @@ void APlayerCharacter::TakeDamage(int DamageAmount, float StunDuration)
 
 		GetAnimInstance()->JumpToNode(FName("JumpDie"));
 		EnableAttackCollisionBox(false);
+
+		float RestartDelay = 3.0f;
+		GetWorldTimerManager().SetTimer(RestartTimer, this, &APlayerCharacter::OnRestartTimerTimeout, 1.0f, false, RestartDelay);
 	}
 	else
 	{
@@ -307,9 +310,9 @@ void APlayerCharacter::CollectItem(CollectableType ItemType)
 
 		case CollectableType::DoubleJumpUpgrade:
 		{
-			if (!MyGameInstance->IsDoubleJumpUnloacked)
+			if (!MyGameInstance->IsDoubleJumpUnlocked)
 			{
-				MyGameInstance->IsDoubleJumpUnloacked = true;
+				MyGameInstance->IsDoubleJumpUnlocked = true;
 				UnlockDoubleJump();
 			}
 
@@ -328,4 +331,10 @@ void APlayerCharacter::CollectItem(CollectableType ItemType)
 void APlayerCharacter::UnlockDoubleJump()
 {
 	JumpMaxCount = 2;
+}
+
+
+void APlayerCharacter::OnRestartTimerTimeout()
+{
+	MyGameInstance->RestartGame();
 }

@@ -111,6 +111,9 @@ public:
 
 	FTimerHandle StunTimer;
 
+	FTimerHandle RestartTimer;
+
+
 	APlayerCharacter();
 
 	virtual void BeginPlay() override;
@@ -144,4 +147,5 @@ public:
 
 	void UnlockDoubleJump();
 	
+	void OnRestartTimerTimeout();
 };
