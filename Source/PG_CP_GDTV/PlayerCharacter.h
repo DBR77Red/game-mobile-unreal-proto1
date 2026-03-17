@@ -88,6 +88,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "State", meta = (ToolTip = "Whether the player is alive or has been defeated"))
 	bool IsAlive = true; 
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "State", meta = (ToolTip = "Whether the player is active or not, used for level transition"))
+	bool IsActive = true;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "State", meta = (ToolTip = "Whether the player is alive or has been defeated"))
 	bool IsStunned = false;
 
@@ -148,4 +151,6 @@ public:
 	void UnlockDoubleJump();
 	
 	void OnRestartTimerTimeout();
+
+	void Deactivate();
 };
