@@ -7,6 +7,7 @@
 #include "Enemy.h"
 
 #include "Kismet/GameplayStatics.h" 
+#include "Kismet/KismetSystemLibrary.h"
 
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -107,6 +108,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &APlayerCharacter::Attack);
 
+		EnhancedInputComponent->BindAction(QuitGame, ETriggerEvent::Started, this, &APlayerCharacter::Quit);
+
 		//EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Started, this, &APlayerCharacter::Shoot);
 		
 	}
@@ -174,6 +177,17 @@ void APlayerCharacter::Attack(const FInputActionValue& Value)
 
 	}
 
+
+}
+
+void APlayerCharacter::Quit(const FInputActionValue& Value)
+{
+
+	//Passou no curso
+	// UKismetSystemLibrary::QuitGame(GetWorld(), UGameplayStatics::GetPlayerController(GetWorld(), 0), EQuitPreference::Quit, false);
+	
+	//pesquisei online
+	UKismetSystemLibrary::QuitGame(GetWorld(), GetWorld()->GetFirstPlayerController(), EQuitPreference::Quit, true);
 
 }
 

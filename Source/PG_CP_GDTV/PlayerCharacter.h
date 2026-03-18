@@ -66,6 +66,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UInputAction* AttackAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UInputAction* QuitGame;
+
 	//AnimSeq
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UPaperZDAnimSequence* AttackAnimSequence;
@@ -127,6 +130,8 @@ public:
 	void JumpStarted(const FInputActionValue& Value);
 	void JumpEnded(const FInputActionValue& Value);
 	void Attack(const FInputActionValue& Value);
+
+	void Quit(const FInputActionValue& Value);
 
 
 	void UpdateDirection(float MoveDirection);
