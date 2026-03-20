@@ -53,7 +53,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float AttackCoolDownInSeconds = 3.0f;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int AttackDamage = 25;
 		
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

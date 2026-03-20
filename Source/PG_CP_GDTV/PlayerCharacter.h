@@ -157,5 +157,7 @@ public:
 	
 	void OnRestartTimerTimeout();
 
+	
+	UFUNCTION(BlueprintCallable)
 	void Deactivate();
 };
