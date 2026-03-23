@@ -124,12 +124,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 void APlayerCharacter::Move(const FInputActionValue& Value)
 {
-	// IA_Move should be set to Value Type = Axis2D (Vector2D) in the editor.
-	// Desktop keyboard mappings send (X=1,Y=0) or (X=-1,Y=0) — Y stays zero.
-	// The mobile virtual joystick also sends Y, which we use to trigger Jump.
-	FVector2D MoveValue = Value.Get<FVector2D>();
-	float HorizontalInput = MoveValue.X;
-	float VerticalInput   = MoveValue.Y;
+	float HorizontalInput = Value.Get<FVector2D>().X;
 
 	if (IsAlive && CanMove && !IsStunned)
 	{
@@ -139,29 +134,11 @@ void APlayerCharacter::Move(const FInputActionValue& Value)
 			AddMovementInput(Direction, HorizontalInput);
 			UpdateDirection(HorizontalInput);
 		}
-
-		// Joystick up → jump (mobile only; Y is always 0 on desktop)
-		if (VerticalInput > JoystickJumpThreshold && !bJoystickJumpActive)
-		{
-			bJoystickJumpActive = true;
-			Jump();
-		}
-		else if (VerticalInput <= JoystickJumpThreshold && bJoystickJumpActive)
-		{
-			bJoystickJumpActive = false;
-			StopJumping();
-		}
 	}
 }
 
 void APlayerCharacter::MoveEnded(const FInputActionValue& Value)
 {
-	// Joystick returned to centre — release any joystick-triggered jump
-	if (bJoystickJumpActive)
-	{
-		bJoystickJumpActive = false;
-		StopJumping();
-	}
 }
 
 void APlayerCharacter::UpdateDirection(float MoveDirection)

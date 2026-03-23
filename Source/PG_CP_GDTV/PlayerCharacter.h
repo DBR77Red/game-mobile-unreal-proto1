@@ -121,18 +121,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float AttackStunDuration = 0.3f;
 
-	// Joystick Y value above which the virtual joystick triggers a jump (mobile)
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mobile")
-	float JoystickJumpThreshold = 0.5f;
-
-
 	FZDOnAnimationOverrideEndSignature OnAttackOverrideEndDelegate;
 
 	FTimerHandle StunTimer;
 
 	FTimerHandle RestartTimer;
-
-	bool bJoystickJumpActive = false;
 
 
 	APlayerCharacter();
