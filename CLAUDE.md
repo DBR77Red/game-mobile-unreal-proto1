@@ -17,12 +17,34 @@ Engine: Unreal Engine 5.7 | Plugin: PaperZD | Input: Enhanced Input System
 ## Pending Tasks
 
 ### 1. Mobile On-Screen Controllers
-- Add a virtual joystick for left-side movement (left thumb)
-- Add on-screen buttons for Jump and Attack (right thumb)
-- Use UE5's built-in `UVirtualJoystick` / Touch Interface setup or a custom HUD widget
-- Make sure Enhanced Input works with touch events
-- Test on Android (target platform)
-- Ensure buttons are properly sized and positioned for mobile screens (consider safe zones)
+
+**Target platform:** Android
+
+**Control scheme:**
+- Left thumb: Android virtual joystick (UE5 built-in Touch Interface / `UVirtualJoystick`)
+  - Left/Right axis → horizontal movement (maps to `IA_Move`)
+  - **Up on joystick → triggers Jump** (`IA_Jump`) — no separate jump button
+- Right thumb: single on-screen Attack button (maps to `IA_Attack`)
+
+**Implementation notes:**
+- Configure the Touch Interface asset (`Content/Input/TI_Mobile.uasset`) with two zones:
+  - Left zone: joystick with `CaptureRadius` covering ~35% of screen width; bind up-axis threshold (e.g. Y > 0.5) to fire `IA_Jump`
+  - Right zone: single tap button for `IA_Attack`
+- To map joystick-up to Jump via Enhanced Input, add a `UInputTriggerThreshold` on the vertical axis binding, or handle it in `PlayerCharacter::Tick` / `SetupPlayerInputComponent` by reading the axis value and calling `Jump()` when Y exceeds a threshold
+- Make sure Enhanced Input works with touch events (set `bSupportsTouch=true` in project settings)
+- Ensure safe zone padding is respected (`UUserWidget` anchors to safe zone, or use `USafeZone` slot)
+- Properly size joystick and button for thumbs (~120–150 dp diameter)
+- Test on Android (target platform); validate with different screen aspect ratios
+
+**In-game exit / pause menu:**
+- Add a floating pause/menu button (top-right corner) visible during gameplay
+- Tapping it opens a UMG pause widget with:
+  - **Resume** — dismisses menu, unpauses
+  - **Restart Level** — reloads current level via `UGameplayStatics::OpenLevel`
+  - **Quit to Main Menu** — loads main menu level
+  - **Quit Game** — calls `UKismetSystemLibrary::QuitGame` (or `APlayerController::ConsoleCommand("quit")`)
+- Pause state: call `UGameplayStatics::SetGamePaused(this, true/false)` on open/close
+- Widget should be added to the viewport in `PlayerCharacter::BeginPlay` or via the HUD class (`UPlayerHUD`)
 
 ### 2. Theme Rework
 - Replace the pirate theme with a new one (TBD — define new theme: e.g. ninja, knight, sci-fi)

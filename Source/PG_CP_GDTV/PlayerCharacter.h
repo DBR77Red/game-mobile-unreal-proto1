@@ -28,6 +28,7 @@
 
 #include "PlayerHUD.h"
 #include "CrustyPirateGameInstance.h"
+#include "PauseMenuWidget.h"
 
 #include "CollectableItem.h"
 
@@ -69,6 +70,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UInputAction* QuitGame;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UInputAction* PauseAction;
+
 	//AnimSeq
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UPaperZDAnimSequence* AttackAnimSequence;
@@ -76,9 +80,14 @@ public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UPlayerHUD> PlayerHUDClass;
 
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UPlayerHUD* PlayerHUDWidget;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UPauseMenuWidget> PauseMenuWidgetClass;
+
+	UPROPERTY(BlueprintReadOnly)
+	TObjectPtr<UPauseMenuWidget> PauseMenuWidgetInstance;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	UCrustyPirateGameInstance* MyGameInstance;
@@ -112,12 +121,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float AttackStunDuration = 0.3f;
 
+	// Joystick Y value above which the virtual joystick triggers a jump (mobile)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mobile")
+	float JoystickJumpThreshold = 0.5f;
 
-	FZDOnAnimationOverrideEndSignature OnAttackOverrideEndDelegate; 
+
+	FZDOnAnimationOverrideEndSignature OnAttackOverrideEndDelegate;
 
 	FTimerHandle StunTimer;
 
 	FTimerHandle RestartTimer;
+
+	bool bJoystickJumpActive = false;
 
 
 	APlayerCharacter();
@@ -127,11 +142,16 @@ public:
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override; 
 
 	void Move(const FInputActionValue& Value);
+	void MoveEnded(const FInputActionValue& Value);
 	void JumpStarted(const FInputActionValue& Value);
 	void JumpEnded(const FInputActionValue& Value);
 	void Attack(const FInputActionValue& Value);
 
 	void Quit(const FInputActionValue& Value);
+	void Pause(const FInputActionValue& Value);
+
+	UFUNCTION(BlueprintCallable)
+	void OpenPauseMenu();
 
 
 	void UpdateDirection(float MoveDirection);

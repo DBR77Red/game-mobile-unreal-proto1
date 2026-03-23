@@ -6,10 +6,11 @@
 
 #include "Enemy.h"
 
-#include "Kismet/GameplayStatics.h" 
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 #include "GameFramework/CharacterMovementComponent.h"
+#include "InputMappingContext.h"
 
 
 APlayerCharacter::APlayerCharacter()
@@ -101,6 +102,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Move);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &APlayerCharacter::MoveEnded);
 
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &APlayerCharacter::JumpStarted);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &APlayerCharacter::JumpEnded);
@@ -110,6 +112,11 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 		EnhancedInputComponent->BindAction(QuitGame, ETriggerEvent::Started, this, &APlayerCharacter::Quit);
 
+		if (PauseAction)
+		{
+			EnhancedInputComponent->BindAction(PauseAction, ETriggerEvent::Started, this, &APlayerCharacter::Pause);
+		}
+
 		//EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Started, this, &APlayerCharacter::Shoot);
 		
 	}
@@ -117,15 +124,43 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 void APlayerCharacter::Move(const FInputActionValue& Value)
 {
-	float MoveActionValue = Value.Get<float>();
-	
+	// IA_Move should be set to Value Type = Axis2D (Vector2D) in the editor.
+	// Desktop keyboard mappings send (X=1,Y=0) or (X=-1,Y=0) — Y stays zero.
+	// The mobile virtual joystick also sends Y, which we use to trigger Jump.
+	FVector2D MoveValue = Value.Get<FVector2D>();
+	float HorizontalInput = MoveValue.X;
+	float VerticalInput   = MoveValue.Y;
+
 	if (IsAlive && CanMove && !IsStunned)
 	{
-		
-		FVector Direction = FVector(1.0f, 0.0f, 0.0f);
-		AddMovementInput(Direction, MoveActionValue);
-		UpdateDirection(MoveActionValue);
+		if (HorizontalInput != 0.0f)
+		{
+			FVector Direction = FVector(1.0f, 0.0f, 0.0f);
+			AddMovementInput(Direction, HorizontalInput);
+			UpdateDirection(HorizontalInput);
+		}
 
+		// Joystick up → jump (mobile only; Y is always 0 on desktop)
+		if (VerticalInput > JoystickJumpThreshold && !bJoystickJumpActive)
+		{
+			bJoystickJumpActive = true;
+			Jump();
+		}
+		else if (VerticalInput <= JoystickJumpThreshold && bJoystickJumpActive)
+		{
+			bJoystickJumpActive = false;
+			StopJumping();
+		}
+	}
+}
+
+void APlayerCharacter::MoveEnded(const FInputActionValue& Value)
+{
+	// Joystick returned to centre — release any joystick-triggered jump
+	if (bJoystickJumpActive)
+	{
+		bJoystickJumpActive = false;
+		StopJumping();
 	}
 }
 
@@ -358,6 +393,53 @@ void APlayerCharacter::UnlockDoubleJump()
 void APlayerCharacter::OnRestartTimerTimeout()
 {
 	MyGameInstance->RestartGame();
+}
+
+void APlayerCharacter::Pause(const FInputActionValue& Value)
+{
+	if (IsValid(PauseMenuWidgetInstance) && PauseMenuWidgetInstance->IsInViewport())
+	{
+		PauseMenuWidgetInstance->ResumeGame();
+	}
+	else
+	{
+		OpenPauseMenu();
+	}
+}
+
+void APlayerCharacter::OpenPauseMenu()
+{
+	if (!PauseMenuWidgetClass) return;
+	if (IsValid(PauseMenuWidgetInstance) && PauseMenuWidgetInstance->IsInViewport()) return; // already open
+
+	APlayerController* PC = Cast<APlayerController>(Controller);
+	PauseMenuWidgetInstance = CreateWidget<UPauseMenuWidget>(PC, PauseMenuWidgetClass);
+	if (PauseMenuWidgetInstance)
+	{
+		// Tell the widget which key should act as pause/resume so it can handle it
+		// while the game is paused (Enhanced Input won't fire when paused, but NativeOnKeyDown will).
+		if (InputMappingContext && PauseAction)
+		{
+			for (const FEnhancedActionKeyMapping& Mapping : InputMappingContext->GetMappings())
+			{
+				if (Mapping.Action == PauseAction)
+				{
+					PauseMenuWidgetInstance->PauseKey = Mapping.Key;
+					break;
+				}
+			}
+		}
+
+		PauseMenuWidgetInstance->AddToPlayerScreen();
+		UGameplayStatics::SetGamePaused(this, true);
+		if (PC)
+		{
+			PC->SetShowMouseCursor(true);
+			FInputModeUIOnly InputMode;
+			InputMode.SetWidgetToFocus(PauseMenuWidgetInstance->TakeWidget());
+			PC->SetInputMode(InputMode);
+		}
+	}
 }
 
 
