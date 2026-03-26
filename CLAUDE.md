@@ -20,31 +20,24 @@ Engine: Unreal Engine 5.7 | Plugin: PaperZD | Input: Enhanced Input System
 
 **Target platform:** Android
 
-**Control scheme:**
-- Left thumb: Android virtual joystick (UE5 built-in Touch Interface / `UVirtualJoystick`)
-  - Left/Right axis → horizontal movement (maps to `IA_Move`)
-  - **Up on joystick → triggers Jump** (`IA_Jump`) — no separate jump button
-- Right thumb: single on-screen Attack button (maps to `IA_Attack`)
+**Control scheme (IMPLEMENTED on branch `mobile-inputs-and-pause-menu`):**
+- Left thumb: virtual joystick → horizontal movement (`IA_Move`)
+- Right thumb: virtual joystick → flick up = Jump (`IA_Jump`), flick right = Attack (`IA_Attack`)
 
-**Implementation notes:**
-- Configure the Touch Interface asset (`Content/Input/TI_Mobile.uasset`) with two zones:
-  - Left zone: joystick with `CaptureRadius` covering ~35% of screen width; bind up-axis threshold (e.g. Y > 0.5) to fire `IA_Jump`
-  - Right zone: single tap button for `IA_Attack`
-- To map joystick-up to Jump via Enhanced Input, add a `UInputTriggerThreshold` on the vertical axis binding, or handle it in `PlayerCharacter::Tick` / `SetupPlayerInputComponent` by reading the axis value and calling `Jump()` when Y exceeds a threshold
-- Make sure Enhanced Input works with touch events (set `bSupportsTouch=true` in project settings)
-- Ensure safe zone padding is respected (`UUserWidget` anchors to safe zone, or use `USafeZone` slot)
-- Properly size joystick and button for thumbs (~120–150 dp diameter)
-- Test on Android (target platform); validate with different screen aspect ratios
+**How it works — key notes:**
+- `TI_Mobile.uasset`: two joystick controls (no images needed — axis input works without textures)
+  - Left joystick: `Main = Gamepad Left Thumbstick X-Axis`, `Alt = None`, `Treat as Button = false`
+  - Right joystick: `Main = Gamepad Right Thumbstick X-Axis`, `Alt = Gamepad Right Thumbstick Y-Axis`, `Treat as Button = false`
+- `IMC_CrustyPirate`: right stick axes mapped with **Pressed** trigger (fires `ETriggerEvent::Started` when axis > 0.5 actuation)
+  - `IA_Jump` ← `Gamepad Right Thumbstick Y-Axis` + Pressed trigger
+  - `IA_Attack` ← `Gamepad Right Thumbstick X-Axis` + Pressed trigger
+- `IA_Move` value type: `Axis2D (Vector2D)` — `Move()` reads `.X` only; `.Y` unused
+- Do NOT use `Treat as Button = true` controls in TI_Mobile — they do not work without a texture assigned
 
-**In-game exit / pause menu:**
-- Add a floating pause/menu button (top-right corner) visible during gameplay
-- Tapping it opens a UMG pause widget with:
-  - **Resume** — dismisses menu, unpauses
-  - **Restart Level** — reloads current level via `UGameplayStatics::OpenLevel`
-  - **Quit to Main Menu** — loads main menu level
-  - **Quit Game** — calls `UKismetSystemLibrary::QuitGame` (or `APlayerController::ConsoleCommand("quit")`)
-- Pause state: call `UGameplayStatics::SetGamePaused(this, true/false)` on open/close
-- Widget should be added to the viewport in `PlayerCharacter::BeginPlay` or via the HUD class (`UPlayerHUD`)
+**Still pending:**
+- Add a floating pause button (top-right corner) to `WBP_PlayerHUD` → calls `OpenPauseMenu()` (BlueprintCallable already implemented in C++)
+- `UPauseMenuWidget` C++ class and `WBP_PauseMenu` Blueprint are implemented; just need the HUD button wired up
+- Test on actual Android device; validate safe zone padding
 
 ### 2. Theme Rework
 - Replace the pirate theme with a new one (TBD — define new theme: e.g. ninja, knight, sci-fi)

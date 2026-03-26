@@ -166,8 +166,6 @@ public:
 
 	void CollectItem(CollectableType ItemType);
 
-	void UnlockDoubleJump();
-	
 	void OnRestartTimerTimeout();
 
 	

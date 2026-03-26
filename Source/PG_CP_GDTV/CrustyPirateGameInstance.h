@@ -27,6 +27,9 @@ public:
 	bool IsDoubleJumpUnlocked = false;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	int SkullCount = 0;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	int CurrentLevelIndex = 1;
 	
 	void SetPlayerHP(int NewHP);

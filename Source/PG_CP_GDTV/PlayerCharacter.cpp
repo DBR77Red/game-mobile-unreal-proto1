@@ -63,9 +63,9 @@ void APlayerCharacter::BeginPlay()
 	{
 		HitPoints = MyGameInstance->PlayerHP;
 
-		if (MyGameInstance->IsDoubleJumpUnlocked)
+		if (MyGameInstance->SkullCount > 0)
 		{
-			UnlockDoubleJump();
+			JumpMaxCount = FMath::Min(MyGameInstance->SkullCount + 1, 3);
 		}
 	}
 
@@ -335,7 +335,7 @@ void APlayerCharacter::CollectItem(CollectableType ItemType)
 
 		case CollectableType::Diamond:
 		{
-			MyGameInstance->AddDiamond(1);
+			MyGameInstance->AddDiamond(2);
 			PlayerHUDWidget->SetDiamonds(MyGameInstance->CollectedDiamontCount);
 
 		}break;
@@ -343,12 +343,9 @@ void APlayerCharacter::CollectItem(CollectableType ItemType)
 
 		case CollectableType::DoubleJumpUpgrade:
 		{
-			if (!MyGameInstance->IsDoubleJumpUnlocked)
-			{
-				MyGameInstance->IsDoubleJumpUnlocked = true;
-				UnlockDoubleJump();
-			}
-
+			MyGameInstance->SkullCount++;
+			MyGameInstance->IsDoubleJumpUnlocked = true;
+			JumpMaxCount = FMath::Min(MyGameInstance->SkullCount + 1, 3);
 
 		}break;
 
@@ -359,11 +356,6 @@ void APlayerCharacter::CollectItem(CollectableType ItemType)
 		}break;
 
 	}
-}
-
-void APlayerCharacter::UnlockDoubleJump()
-{
-	JumpMaxCount = 2;
 }
 
 
